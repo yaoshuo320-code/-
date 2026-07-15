@@ -4,7 +4,7 @@
   "private": true,
   "description": "Revo — AI店长 · 二手3C经营助手",
   "scripts": {
-    "start": "python3 -m http.server 8080",
-    "serve": "npx serve ."
+    "start": "python3 -m http.server 8080 --directory src",
+    "serve": "npx serve src"
   }
 }
