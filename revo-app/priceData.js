@@ -1,0 +1,111 @@
+/**
+ * Mock price source layer.
+ * Future adapters: Xianyu, Zhuanzhuan, JD used, merchant sheet.
+ */
+(function (global) {
+  const PRICE_SOURCE_META = [
+    { name: "闲鱼价格", status: "待接入", key: "xianyu" },
+    { name: "转转成交", status: "待接入", key: "zhuanzhuan" },
+    { name: "京东二手", status: "待接入", key: "jd_used" },
+    { name: "商家报价表", status: "待接入", key: "merchant_sheet" },
+  ];
+
+  const PRODUCT_PRICE_DATA = [
+    {
+      id: "iphone15pro",
+      category: "phone",
+      brand: "Apple",
+      model: "iPhone 15 Pro",
+      capacity: "256GB",
+      condition: "95新",
+      marketPrice: "¥5200-6100",
+      buyPrice: "¥4700-5200",
+      profit: "¥350-680",
+      salesSpeed: "3-5天",
+      futureOpportunity: "高",
+    },
+    {
+      id: "iphone14pro",
+      category: "phone",
+      brand: "Apple",
+      model: "iPhone 14 Pro",
+      capacity: "256GB",
+      condition: "95新",
+      marketPrice: "¥4100-4800",
+      buyPrice: "¥3600-4050",
+      profit: "¥260-520",
+      salesSpeed: "4-7天",
+      futureOpportunity: "中高",
+    },
+    {
+      id: "macbookairm2",
+      category: "computer",
+      brand: "Apple",
+      model: "MacBook Air M2",
+      capacity: "8GB+256GB",
+      condition: "95新",
+      marketPrice: "¥5200-6000",
+      buyPrice: "¥4500-5100",
+      profit: "¥400-760",
+      salesSpeed: "7-14天",
+      futureOpportunity: "高",
+    },
+    {
+      id: "iphone13",
+      category: "phone",
+      brand: "Apple",
+      model: "iPhone 13",
+      capacity: "128GB",
+      condition: "95新",
+      marketPrice: "¥2300-2850",
+      buyPrice: "¥1900-2250",
+      profit: "¥180-360",
+      salesSpeed: "5-9天",
+      futureOpportunity: "稳定",
+    },
+    {
+      id: "ipadair",
+      category: "tablet",
+      brand: "Apple",
+      model: "iPad Air",
+      capacity: "256GB",
+      condition: "95新",
+      marketPrice: "¥3200-3900",
+      buyPrice: "¥2700-3200",
+      profit: "¥220-460",
+      salesSpeed: "8-15天",
+      futureOpportunity: "中",
+    },
+    {
+      id: "macbookprom1",
+      category: "computer",
+      brand: "Apple",
+      model: "MacBook Pro M1",
+      capacity: "16GB+512GB",
+      condition: "95新",
+      marketPrice: "¥6500-7600",
+      buyPrice: "¥5700-6500",
+      profit: "¥450-850",
+      salesSpeed: "10-18天",
+      futureOpportunity: "稳定",
+    },
+    {
+      id: "kindle",
+      category: "reader",
+      brand: "Kindle",
+      model: "Paperwhite",
+      capacity: "标准版",
+      condition: "95新",
+      marketPrice: "¥420-620",
+      buyPrice: "¥280-420",
+      profit: "¥60-150",
+      salesSpeed: "14-25天",
+      futureOpportunity: "低",
+    },
+  ];
+
+  global.PriceData = {
+    PRICE_SOURCE_META,
+    PRODUCT_PRICE_DATA,
+  };
+})(window);

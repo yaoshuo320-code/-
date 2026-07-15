@@ -1,0 +1,113 @@
+<view class="page">
+  <view class="app-header">
+    <view class="header-row">
+      <text class="app-version">V4 · 自动推荐</text>
+      <text class="today-date">{{date}}</text>
+    </view>
+    <text class="app-title">二手3C自动选品推荐系统</text>
+    <text class="app-desc">打开即看今日该收什么货，无需手动计算</text>
+  </view>
+
+  <view class="container">
+    <!-- 今日推荐 -->
+    <view class="card hero-card">
+      <view class="card-head">
+        <view class="card-title"><view class="dot"></view>今日推荐收货机型</view>
+        <text class="rec-count">共 {{recCount}} 款</text>
+      </view>
+
+      <view class="top-pick" wx:if="{{topPick}}">
+        <view class="top-pick-badge">
+          <text>今日</text>
+          <text class="top-pick-badge-main">首选</text>
+        </view>
+        <view>
+          <text class="top-pick-label">综合评分最高 · {{topPick.score}} 分</text>
+          <text class="top-pick-name">{{topPick.name}}</text>
+          <text class="top-pick-sub">建议收 ¥{{topPick.suggestBuy}} → 出 ¥{{topPick.suggestSell}} · 预估利润 ¥{{topPick.estimatedProfit}}</text>
+        </view>
+      </view>
+
+      <view class="rec-list">
+        <view class="rec-item" wx:for="{{recommended}}" wx:key="name">
+          <view class="rec-top">
+            <view>
+              <view class="rec-name-row">
+                <text class="rec-name">{{item.shortName}}</text>
+                <text class="rec-storage" wx:if="{{item.storageBonus}}">{{item.storage}}</text>
+              </view>
+              <text class="rec-price">建议收 ¥{{item.suggestBuy}} → 出 ¥{{item.suggestSell}} · 预估利润 ¥{{item.estimatedProfit}}</text>
+            </view>
+            <view class="rec-score">
+              <text class="rec-score-num">{{item.score}}</text>
+              <text class="rec-score-label">综合分</text>
+            </view>
+          </view>
+          <view class="rec-tags">
+            <text class="tag tag-liq">流动性 {{item.liquidity}}/10</text>
+            <text class="tag tag-profit-{{item.profitLevel}}">利润 {{item.profitLabel}}</text>
+            <text class="tag tag-risk-{{item.riskLevel}}">风险 {{item.riskLabel}}</text>
+          </view>
+        </view>
+      </view>
+      <text class="refresh-bar">基于流动性 · 利润潜力 · 市场需求 · 行业规则引擎自动生成</text>
+    </view>
+
+    <!-- 排行榜 -->
+    <view class="card">
+      <view class="card-head">
+        <view class="card-title"><view class="dot"></view>机会排行榜</view>
+        <text class="card-tag">TOP 3</text>
+      </view>
+      <view class="podium">
+        <view class="podium-item rank-{{item.rank}}" wx:for="{{podium}}" wx:key="name">
+          <text class="podium-rank">TOP {{item.rank}}</text>
+          <text class="podium-name">{{item.shortName}}\n{{item.storage}}</text>
+          <text class="podium-score">{{item.score}}</text>
+          <text class="podium-profit">利润 ¥{{item.estimatedProfit}}</text>
+        </view>
+      </view>
+      <view class="rank-detail-list">
+        <view class="rank-detail" wx:for="{{topThree}}" wx:key="name">
+          <view class="rank-num {{item.rankClass}}">{{item.rankNum}}</view>
+          <view class="rank-info">
+            <text class="rank-info-name">{{item.name}}</text>
+            <text class="rank-info-sub">流动性 {{item.liquidity}}/10 · 利润{{item.profitLabel}} · 风险{{item.riskLabel}}</text>
+          </view>
+          <text class="rank-profit">+¥{{item.estimatedProfit}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 不推荐 -->
+    <view class="card">
+      <view class="card-head">
+        <view class="card-title"><view class="dot"></view>不推荐机型</view>
+        <text class="card-tag warn">避开</text>
+      </view>
+      <view class="bad-list">
+        <view class="bad-item" wx:for="{{notRecommended}}" wx:key="name">
+          <view class="bad-icon">✕</view>
+          <view>
+            <text class="bad-name">{{item.name}}</text>
+            <text class="bad-reason">{{item.reason}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 规则 -->
+    <view class="card">
+      <view class="rules-toggle" bindtap="toggleRules">
+        <text>行业规则引擎说明</text>
+        <text class="rules-arrow {{rulesOpen ? 'open' : ''}}">▼</text>
+      </view>
+      <view class="rules-body {{rulesOpen ? 'open' : ''}}">
+        <view class="rule-item" wx:for="{{rules}}" wx:key="text">
+          <text class="rule-icon">{{item.icon}}</text>
+          <text>{{item.text}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

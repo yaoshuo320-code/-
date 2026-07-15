@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Revo — AI店长 · 二手3C经营助手</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="brain">
+  <header class="app-header" id="appHeader">
+    <div class="header-top">
+      <button type="button" class="brand-badge" id="brandHomeBtn">Revo</button>
+      <div class="header-actions">
+        <button class="user-badge guest" id="userBadge">游客</button>
+        <button class="btn-pro" id="headerUpgrade">升级 Pro</button>
+      </div>
+    </div>
+    <h1 class="app-title" id="appTitle">Revo</h1>
+    <p class="app-subtitle" id="appSubtitle">AI发现每件资产的新价值</p>
+  </header>
+
+  <!-- 智脑 · AI店长首页 -->
+  <div id="page-brain" class="page theme-brain active">
+    <div class="container home-container">
+      <div id="homePageMount"></div>
+    </div>
+  </div>
+
+  <!-- 生意 · 一级入口（库存 / 利润 / 收货 / 卖货） -->
+  <div id="page-business" class="page theme-business">
+    <div class="container home-container">
+      <div id="businessPageMount"></div>
+    </div>
+  </div>
+
+  <!-- 市场 · 一级入口（行业趋势 / 热门品类 / 市场机会） -->
+  <div id="page-market" class="page theme-market">
+    <div class="container home-container">
+      <div id="marketPageMount"></div>
+    </div>
+  </div>
+
+  <!-- 库存 · 库存大脑 Dashboard -->
+  <div id="page-inventory" class="page theme-inventory">
+    <div class="container home-container">
+      <div id="inventoryPageMount"></div>
+    </div>
+  </div>
+
+  <!-- 收货 -->
+  <div id="page-buy" class="page theme-buy">
+    <div class="container">
+      <div class="page-hero hero-buy">
+        <div class="dash-kicker">BUY HEAT</div>
+        <div class="dash-title">收货热度</div>
+        <div class="dash-subtitle">按分类查看适合收货的商品，方块越大代表收货机会越强。</div>
+      </div>
+      <div id="buyCategoryFilter"></div>
+      <div class="section-label">收货热度 Treemap</div>
+      <div class="treemap" id="buyHeatMap"></div>
+      <div class="detail-panel" id="buyDetail"></div>
+      <div class="workflow-panel">
+        <div class="workflow-title">💰 收货利润判断</div>
+        <div class="brain-badge">🧠 价格大脑 V1 · 决策辅助，非精准报价</div>
+        <label class="form-label">品牌</label>
+        <select class="form-select" id="tradeBrand">
+          <option value="Apple">Apple</option>
+          <option value="华为">华为</option>
+          <option value="Kindle">Kindle</option>
+          <option value="其他">其他</option>
+        </select>
+        <label class="form-label">型号</label>
+        <input class="form-input" id="tradeModel" placeholder="如 iPhone 15 Pro Max" />
+        <label class="form-label">容量</label>
+        <select class="form-select" id="tradeCapacity">
+          <option value="128GB">128GB</option>
+          <option value="256GB" selected>256GB</option>
+          <option value="512GB">512GB</option>
+          <option value="1TB">1TB</option>
+        </select>
+        <label class="form-label">成色</label>
+        <select class="form-select" id="tradeCondition">
+          <option value="充新">充新</option>
+          <option value="99新">99新</option>
+          <option value="95新" selected>95新</option>
+          <option value="9新">9新</option>
+          <option value="大花">大花</option>
+          <option value="功能异常">功能异常</option>
+        </select>
+        <div class="form-group" id="batteryGroup">
+          <label class="form-label">电池健康度（%）</label>
+          <input class="form-input" id="tradeBattery" type="number" placeholder="如 90" min="0" max="100" />
+        </div>
+        <label class="form-label">预计收货价格（元）</label>
+        <input class="form-input" id="tradeBuyPrice" type="number" placeholder="如 4800" />
+        <button class="form-btn" id="tradeSubmit">开始利润判断</button>
+        <div class="result-box" id="tradeResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 搜索 -->
+  <div id="page-search" class="page theme-search">
+    <div class="container search-container">
+      <div id="searchBoxMount"></div>
+      <div id="searchResult"></div>
+      <details class="collect-details">
+        <summary>🧾 价格采集助手</summary>
+        <div class="workflow-panel collect-panel">
+          <div class="workflow-desc">生成多平台搜索入口，辅助人工采集真实价格。</div>
+          <label class="form-label">品牌</label>
+          <input class="form-input" id="collectBrand" placeholder="如 Apple" />
+          <label class="form-label">型号</label>
+          <input class="form-input" id="collectModel" placeholder="如 iPhone 15 Pro Max" />
+          <label class="form-label">容量</label>
+          <input class="form-input" id="collectCapacity" placeholder="如 512GB" />
+          <label class="form-label">成色</label>
+          <input class="form-input" id="collectCondition" placeholder="如 95新" />
+          <button class="form-btn" id="collectGenerateBtn">生成价格搜索入口</button>
+          <div class="collect-links" id="collectLinks"></div>
+          <div class="section-label" style="margin-top:16px">人工录入价格区间</div>
+          <div class="manual-grid">
+            <input class="form-input" id="manualMarketMin" type="number" placeholder="挂牌最低" />
+            <input class="form-input" id="manualMarketMax" type="number" placeholder="挂牌最高" />
+            <input class="form-input" id="manualTransaction" type="number" placeholder="成交参考价" />
+            <input class="form-input" id="manualDealer" type="number" placeholder="商家出货价" />
+            <input class="form-input" id="manualBuy" type="number" placeholder="建议收货价" />
+            <input class="form-input" id="manualLiquidity" type="number" placeholder="流动性 1-10" />
+          </div>
+          <button class="save-collect-btn" id="manualSaveBtn">保存到本地价格库</button>
+          <div class="collect-status" id="collectStatus"></div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- 卖货 -->
+  <div id="page-sell" class="page theme-sell">
+    <div class="container">
+      <div class="page-hero hero-sell">
+        <div class="dash-kicker">SELL HEAT</div>
+        <div class="dash-title">销售热度</div>
+        <div class="dash-subtitle">蓝色 Treemap 展示销售热度和周转时间，帮助决定先卖什么。</div>
+      </div>
+      <div id="sellCategoryFilter"></div>
+      <div class="section-label">销售热度 Treemap</div>
+      <div class="treemap" id="sellHeatMap"></div>
+      <div class="detail-panel" id="sellDetail"></div>
+    </div>
+  </div>
+
+  <!-- 机会 -->
+  <div id="page-opportunity" class="page theme-opportunity">
+    <div class="container">
+      <div class="page-hero hero-opportunity">
+        <div class="dash-kicker">OPPORTUNITY</div>
+        <div class="dash-title">未来机会</div>
+        <div class="dash-subtitle">紫色机会地图 · 新品周期与需求变化</div>
+      </div>
+      <div id="oppCategoryFilter"></div>
+      <div class="section-label">未来机会 Treemap</div>
+      <div class="treemap" id="oppHeatMap"></div>
+      <div class="detail-panel" id="oppDetail"></div>
+    </div>
+  </div>
+
+  <!-- 行业 -->
+  <div id="page-industry" class="page theme-industry">
+    <div class="container">
+      <div class="industry-hero">
+        <div class="dash-kicker">INDUSTRY ANALYSIS</div>
+        <div class="dash-title">行业分析</div>
+        <div class="dash-subtitle">二手市场趋势地图 · 发现增长方向</div>
+      </div>
+      <div id="industrySectorFilter"></div>
+      <div class="analytics-card">
+        <div class="section-label">行业热度</div>
+        <div id="industryHeatChart"></div>
+      </div>
+      <div class="analytics-card">
+        <div class="section-label">趋势地图</div>
+        <div id="industryTrendList"></div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" id="bottomNavMount"></nav>
+
+  <div class="modal-overlay" id="paywallModal">
+    <div class="modal">
+      <button class="modal-close" data-close="paywallModal">✕</button>
+      <h2>升级 Pro</h2>
+      <p>解锁完整赚钱榜单、避坑清单与价格大脑深度分析</p>
+      <div class="price-hero"><div class="amount">¥99<small>/月</small></div></div>
+      <button class="subscribe-btn" id="subscribeBtn">立即开通（演示）</button>
+    </div>
+  </div>
+
+  <script src="data/priceData.js"></script>
+  <script src="data/categoryData.js"></script>
+  <script src="data/industryData.js"></script>
+  <script src="data/marketHeat.js"></script>
+  <script src="data/homeData.js"></script>
+  <script src="data/inventoryData.js"></script>
+  <script src="price-brain-db.js"></script>
+  <script src="trade-engine.js"></script>
+  <script src="trade-records.js"></script>
+  <script src="user.js"></script>
+  <script src="components/HeatMap.jsx"></script>
+  <script src="components/SearchBox.jsx"></script>
+  <script src="components/BarChart.jsx"></script>
+  <script src="components/ProductCard.jsx"></script>
+  <script src="components/CategoryFilter.jsx"></script>
+  <script src="components/IndustryTrend.jsx"></script>
+  <script src="components/BottomNav.jsx"></script>
+  <script src="components/HubPage.jsx"></script>
+  <script src="components/InventoryBrain.jsx"></script>
+  <script src="components/InventoryPage.jsx"></script>
+  <script src="components/HomePage.jsx"></script>
+  <script src="components/SplashScreen.jsx"></script>
+  <script src="app.js"></script>
+</body>
+</html>
