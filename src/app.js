@@ -14,9 +14,15 @@
   const PAGE_TO_TAB = {
     business: "business",
     inventory: "business",
+    "inventory-import": "business",
+    "inventory-capture": "business",
+    "inventory-capture-result": "business",
+    "inventory-confirm": "business",
+    "inventory-detail": "business",
     buy: "business",
     sell: "business",
     brain: "brain",
+    profile: "brain",
     market: "market",
     industry: "market",
     opportunity: "market",
@@ -24,8 +30,10 @@
   };
   let currentPage = "brain";
   let activeCategory = "all";
-  let industrySector = "all";
-  let industryDrillSector = null;
+  let industrySector = "phone";
+  let industryDrillSector = "phone";
+  let industryProductId = "iphone";
+  let inventoryDetailId = null;
 
   const OPP_MODEL_MAP = {
     iphone15pro: { brand: "Apple", model: "iPhone 15 Pro", capacity: "256GB", condition: "95新" },
@@ -57,9 +65,15 @@
 
   function refreshCurrentPage() {
     if (currentPage === "brain") renderHomePage();
+    if (currentPage === "profile") renderProfilePage();
     if (currentPage === "business") renderBusinessPage();
     if (currentPage === "market") renderMarketPage();
     if (currentPage === "inventory") renderInventoryPage();
+    if (currentPage === "inventory-import") renderInventoryImportPage();
+    if (currentPage === "inventory-capture") renderInventoryCapturePage();
+    if (currentPage === "inventory-capture-result") renderInventoryCaptureResultPage();
+    if (currentPage === "inventory-confirm") renderInventoryConfirmPage();
+    if (currentPage === "inventory-detail") renderInventoryDetailPage();
     if (currentPage === "buy") renderBuyPage();
     if (currentPage === "search") renderSearchPage();
     if (currentPage === "sell") renderSellPage();
@@ -75,14 +89,20 @@
     const header = document.getElementById("appHeader");
     const titles = {
       brain: ["Revo", "AI店长 · 今日经营助手"],
+      profile: ["AI经营档案", "商家的 AI 经营数字画像"],
       business: ["生意", "管理自己的经营 · 库存 利润 收货 卖货"],
-      market: ["市场", "观察外部变化 · 趋势 品类 机会"],
-      inventory: ["库存大脑", "AI 分析库存 · 发现新的经营机会"],
+      market: ["市场大脑", "理解市场变化 · 发现经营机会"],
+      inventory: ["我的库存大脑", "库存决策 · 赚钱机会与风险"],
+      "inventory-import": ["导入库存", "支持 Excel / CSV · 字段自动识别"],
+      "inventory-capture": ["AI拍照入库", "上传商品图 · 自动生成库存卡"],
+      "inventory-capture-result": ["识别结果", "AI 识别与价值判断"],
+      "inventory-confirm": ["入库确认", "确认采购信息 · 加入库存大脑"],
+      "inventory-detail": ["商品详情", "利润 · 周期 · AI经营建议"],
       buy: ["收货热度", "发现值得收的资产 · 趋势与资金效率"],
       search: ["问 Revo", "输入型号，30秒判断是否值得交易"],
       sell: ["销售热度", "周转速度 · 利润效率 · 资金占用"],
       opportunity: ["未来机会", "新品周期 · 需求变化 · 机会标签"],
-      industry: ["行业分析", "二手市场趋势地图 · 发现增长方向"],
+      industry: ["行业生命周期地图", "二手3C · 淡旺季与备货节奏"],
     };
     const [title, sub] = titles[page] || titles.brain;
     document.getElementById("appTitle").textContent = title;
@@ -90,7 +110,7 @@
     document.body.dataset.page = page;
     if (header) {
       // 智脑 / 库存大脑 / 生意 / 市场 均使用页面内欢迎区，隐藏全局 Header
-      const hideHeader = ["brain", "inventory", "business", "market"].includes(page);
+      const hideHeader = ["brain", "profile", "inventory", "inventory-import", "inventory-capture", "inventory-capture-result", "inventory-confirm", "inventory-detail", "business", "market"].includes(page);
       header.classList.toggle("header-minimal", hideHeader);
       header.classList.toggle("header-hidden", hideHeader);
     }
@@ -134,21 +154,77 @@
           return;
         }
         if (mode === "photo") {
-          toast("拍照识别即将上线，先试试输入型号");
-          navigate("search");
+          navigate("inventory-capture");
           return;
         }
-        toast("语音询问即将上线，先试试输入型号");
-        navigate("search");
-      },
-      onGuideStart: () => {
-        HomePage.markGuideSeen();
+        toast("语音描述即将上线，先试试拍照或输入型号");
         navigate("search");
       },
       onIndustryClick: () => navigate("industry"),
       onMessage: () => toast("暂无新消息"),
-      onSettings: () => toast("设置页即将开放"),
+      onSettings: () => navigate("profile"),
     });
+
+    if (window.FirstExperience && window.DemoExperienceData) {
+      FirstExperience.render("firstExperienceMount", {
+        toast,
+        onStartPhoto: () => navigate("inventory-capture"),
+        onStartType: () => navigate("search"),
+        onComplete: () => {
+          HomePage.markGuideSeen && HomePage.markGuideSeen();
+        },
+      });
+    }
+
+    if (window.AIDailyReport && window.DailyReportData) {
+      AIDailyReport.render("aiDailyReportMount", {
+        data: DailyReportData.getReport(),
+        onActionClick: (item) => {
+          if (!item) return;
+          if (item.type === "risk") {
+            navigate("inventory");
+            return;
+          }
+          if (item.type === "opportunity") {
+            navigate("buy");
+            return;
+          }
+          if (item.type === "profit") {
+            navigate("sell");
+            return;
+          }
+          toast(`${item.label}：${item.name} · ${item.suggest}`);
+        },
+        onHistoryClick: (item) => {
+          if (!item) return;
+          toast(`${item.date} · ${item.advice} → ${item.result}`);
+        },
+      });
+    }
+
+    if (window.DailyInsight && window.DailyInsightData) {
+      DailyInsight.render("dailyInsightMount", {
+        data: DailyInsightData.getInsights(),
+        onCardClick: (item) => {
+          if (!item) return;
+          const link = item.link || {};
+          if (link.page === "inventory-detail" && link.itemId) {
+            inventoryDetailId = link.itemId;
+            navigate("inventory-detail");
+            return;
+          }
+          if (link.page === "inventory") {
+            navigate("inventory");
+            return;
+          }
+          if (link.page === "buy" || link.page === "sell") {
+            navigate(link.page);
+            return;
+          }
+          toast(`${item.title}：${item.text}`);
+        },
+      });
+    }
 
     if (window.InventoryBrain && window.InventoryData) {
       InventoryBrain.render("inventoryBrainMount", {
@@ -169,36 +245,142 @@
     if (pageEl) pageEl.scrollTop = 0;
   }
 
+  function renderProfilePage() {
+    // V1.9：我的 AI经营档案（数字画像）
+    const mount = document.getElementById("profilePageMount");
+    if (mount) mount.innerHTML = "";
+
+    ProfileBrain.render("profilePageMount", {
+      data: ProfileData.getBrain(),
+      onBack: () => navigate("brain"),
+      onLogClick: (item) => {
+        if (!item) return;
+        toast(`${item.date} · ${item.advice} → ${item.result}`);
+      },
+    });
+
+    window.scrollTo({ top: 0, behavior: "auto" });
+    const pageEl = document.getElementById("page-profile");
+    if (pageEl) pageEl.scrollTop = 0;
+  }
+
   function renderInventoryPage() {
+    // V1.9：库存大脑闭环首页
     const mount = document.getElementById("inventoryPageMount");
     if (mount) mount.innerHTML = "";
 
-    InventoryPage.render("inventoryPageMount", {
-      data: InventoryData.getDashboard(),
-      onImport: (schema) => {
-        const fields = (schema || []).map((f) => f.label).join("、");
-        toast(`即将支持 Excel / CSV 导入（${fields}）`);
-      },
-      onDiagClick: (item) => {
+    InventoryDashboard.render("inventoryPageMount", {
+      onCapture: () => navigate("inventory-capture"),
+      onImport: () => navigate("inventory-import"),
+      onItemClick: (item) => {
         if (!item) return;
-        toast(`${item.title}：${item.name} · ${item.suggest}`);
-      },
-      onActionClick: (item) => {
-        if (!item) return;
-        if (item.id === "act-airpods") {
-          navigate("buy");
-          return;
-        }
-        if (item.id === "act-iphone15") {
-          navigate("sell");
-          return;
-        }
-        toast(`${item.title} · ${item.desc}`);
+        inventoryDetailId = item.id;
+        navigate("inventory-detail");
       },
     });
 
     window.scrollTo({ top: 0, behavior: "auto" });
     const pageEl = document.getElementById("page-inventory");
+    if (pageEl) pageEl.scrollTop = 0;
+  }
+
+  function renderInventoryImportPage() {
+    const mount = document.getElementById("inventoryImportMount");
+    if (mount) mount.innerHTML = "";
+
+    InventoryImport.render("inventoryImportMount", {
+      toast,
+      onBack: () => navigate("inventory"),
+      onImported: () => navigate("inventory"),
+    });
+
+    window.scrollTo({ top: 0, behavior: "auto" });
+    const pageEl = document.getElementById("page-inventory-import");
+    if (pageEl) pageEl.scrollTop = 0;
+  }
+
+  function renderInventoryCapturePage() {
+    const mount = document.getElementById("inventoryCaptureMount");
+    if (mount) mount.innerHTML = "";
+
+    AIInventoryCapture.render("inventoryCaptureMount", {
+      toast,
+      onBack: () => navigate("inventory"),
+      onRecognized: () => navigate("inventory-capture-result"),
+    });
+
+    window.scrollTo({ top: 0, behavior: "auto" });
+    const pageEl = document.getElementById("page-inventory-capture");
+    if (pageEl) pageEl.scrollTop = 0;
+  }
+
+  function renderInventoryCaptureResultPage() {
+    const mount = document.getElementById("inventoryCaptureResultMount");
+    if (mount) mount.innerHTML = "";
+
+    InventoryCaptureResult.render("inventoryCaptureResultMount", {
+      toast,
+      onBack: () => navigate("inventory-capture"),
+      onRetry: () => {
+        if (window.InventoryBrainData) InventoryBrainData.clearPendingCapture();
+        navigate("inventory-capture");
+      },
+      onConfirm: () => navigate("inventory-confirm"),
+    });
+
+    window.scrollTo({ top: 0, behavior: "auto" });
+    const pageEl = document.getElementById("page-inventory-capture-result");
+    if (pageEl) pageEl.scrollTop = 0;
+  }
+
+  function renderInventoryConfirmPage() {
+    const mount = document.getElementById("inventoryConfirmMount");
+    if (mount) mount.innerHTML = "";
+
+    InventoryConfirm.render("inventoryConfirmMount", {
+      toast,
+      onBack: () => navigate("inventory-capture-result"),
+      onSuccess: (item) => {
+        inventoryDetailId = item && item.id;
+        if (window.DemoExperienceData) DemoExperienceData.markDone();
+        navigate("inventory");
+      },
+    });
+
+    window.scrollTo({ top: 0, behavior: "auto" });
+    const pageEl = document.getElementById("page-inventory-confirm");
+    if (pageEl) pageEl.scrollTop = 0;
+  }
+
+  function renderInventoryDetailPage() {
+    const mount = document.getElementById("inventoryDetailMount");
+    if (mount) mount.innerHTML = "";
+
+    InventoryDetail.render("inventoryDetailMount", {
+      itemId: inventoryDetailId,
+      toast,
+      onBack: () => navigate("inventory"),
+      onAction: (action, item) => {
+        if (!item) return;
+        if (action === "watch") {
+          if (window.DailyInsightData) DailyInsightData.addWatch(item);
+          toast(`已加入关注：${item.name}`);
+          return;
+        }
+        if (action === "sell-alert") {
+          if (window.DailyInsightData) DailyInsightData.setSellAlert(item);
+          toast(`已设置出售提醒：${item.name}`);
+          return;
+        }
+        if (action === "sell-now") {
+          toast(`去卖货：${item.name}`);
+          navigate("sell");
+        }
+      },
+    });
+
+    window.scrollTo({ top: 0, behavior: "auto" });
+    const pageEl = document.getElementById("page-inventory-detail");
     if (pageEl) pageEl.scrollTop = 0;
   }
 
@@ -212,34 +394,69 @@
   }
 
   function renderBusinessPage() {
-    HubPage.render("businessPageMount", {
-      kicker: "MY BUSINESS",
-      title: "生意",
-      subtitle: "管理自己的经营",
-      entries: [
-        { id: "biz-inventory", icon: "🧠", title: "我的库存", desc: "库存健康度 · AI诊断 · 经营行动", page: "inventory" },
-        { id: "biz-profit", icon: "💰", title: "我的利润", desc: "利润中心 · 交易记录与盈利分析", soon: true },
-        { id: "biz-buy", icon: "📦", title: "收货分析", desc: "收货热度 · 值得收什么", page: "buy" },
-        { id: "biz-sell", icon: "📈", title: "卖货分析", desc: "销售热度 · 先卖什么", page: "sell" },
-      ],
-      onEnter: hubEnter,
+    // V1.5 生意驾驶舱：回答「我的生意现在怎么样？」
+    const mount = document.getElementById("businessPageMount");
+    if (mount) mount.innerHTML = "";
+
+    BusinessPage.render("businessPageMount", {
+      data: BusinessData.getDashboard(),
+      onDiagClick: (item) => {
+        if (!item) return;
+        if (item.type === "risk") {
+          navigate("inventory");
+          return;
+        }
+        if (item.type === "profit") {
+          navigate("buy");
+          return;
+        }
+        toast(`${item.title}：${item.suggest}`);
+      },
+      onScoreClick: (item) => {
+        if (!item) return;
+        if (item.page) {
+          navigate(item.page);
+          return;
+        }
+        toast(`${item.label} ${item.value} 分 · 详细分析即将上线`);
+      },
+      onQuickNav: (page) => navigate(page),
     });
+
     window.scrollTo({ top: 0, behavior: "auto" });
+    const pageEl = document.getElementById("page-business");
+    if (pageEl) pageEl.scrollTop = 0;
   }
 
   function renderMarketPage() {
-    HubPage.render("marketPageMount", {
-      kicker: "MARKET",
-      title: "市场",
-      subtitle: "观察外部变化",
-      entries: [
-        { id: "mkt-industry", icon: "🌎", title: "行业趋势", desc: "行业分析 · 二手市场趋势地图", page: "industry" },
-        { id: "mkt-hot", icon: "🔥", title: "热门品类", desc: "品类热度榜 · 需求变化", soon: true },
-        { id: "mkt-opp", icon: "💡", title: "市场机会", desc: "未来机会 · 新品周期与需求变化", page: "opportunity" },
-      ],
-      onEnter: hubEnter,
+    // V1.8：市场 = 市场大脑（AI 分析中心，非价格查询）
+    const mount = document.getElementById("marketPageMount");
+    if (mount) mount.innerHTML = "";
+
+    MarketBrain.render("marketPageMount", {
+      data: MarketData.getBrain(),
+      onCategoryClick: (item) => {
+        if (!item) return;
+        toast(`${item.name} · ${item.judge}`);
+      },
+      onOppClick: (item) => {
+        if (!item) return;
+        if (item.id === "opp-iphone15pro") {
+          navigate("buy");
+          return;
+        }
+        toast(`${item.name} · ${item.suggest}`);
+      },
+      onPriceClick: (item) => {
+        if (!item) return;
+        toast(`${item.name} 区间 ${item.range} · ${item.judge}`);
+      },
+      onDeepLink: (page) => navigate(page),
     });
+
     window.scrollTo({ top: 0, behavior: "auto" });
+    const pageEl = document.getElementById("page-market");
+    if (pageEl) pageEl.scrollTop = 0;
   }
 
   function renderBuyPage() {
@@ -270,12 +487,18 @@
   function setIndustrySector(sector) {
     industrySector = sector;
     industryDrillSector = sector === "all" ? null : sector;
+    const products = (window.SeasonTrendData && SeasonTrendData.getProductsBySector(sector)) || [];
+    const preferred = products.find((p) => p.hasCurve) || products[0];
+    industryProductId = preferred ? preferred.id : null;
     renderIndustryPage();
   }
 
   function drillIndustrySector(sector) {
-    industrySector = sector;
-    industryDrillSector = sector;
+    setIndustrySector(sector);
+  }
+
+  function setIndustryProduct(productId) {
+    industryProductId = productId;
     renderIndustryPage();
   }
 
@@ -285,7 +508,7 @@
       onChange: setIndustrySector,
     });
 
-    const heatItems = IndustryData.getSectorHeat(industrySector);
+    const heatItems = IndustryData.getSectorHeat("all");
     const activeKey = industryDrillSector || (industrySector !== "all" ? industrySector : null);
 
     BarChart.renderIndustryBars("industryHeatChart", {
@@ -295,10 +518,27 @@
     });
 
     const trendSector = industryDrillSector || (industrySector !== "all" ? industrySector : null);
-    IndustryTrend.render("industryTrendList", {
+
+    IndustryTrend.renderProductTabs("industryProductTabs", {
       sector: trendSector,
-      trendMap: trendSector ? IndustryData.getTrendMap(trendSector) : null,
-      trends: trendSector ? IndustryData.getTertiaryTrends(trendSector) : [],
+      activeProductId: industryProductId,
+      onSelect: setIndustryProduct,
+    });
+
+    const chartEl = document.getElementById("industrySeasonChart");
+    if (chartEl && window.SeasonTrendChart) {
+      if (industryProductId) {
+        SeasonTrendChart.render("industrySeasonChart", {
+          productId: industryProductId,
+          showInsight: true,
+        });
+      } else {
+        chartEl.innerHTML = `<div class="stc-empty">选择三级品类查看全年趋势曲线</div>`;
+      }
+    }
+
+    IndustryTrend.renderAiAdvice("industryAiAdvice", {
+      advice: IndustryData.getAiAdvice(trendSector || "all"),
     });
   }
 
@@ -627,6 +867,10 @@
       renderHomePage();
       return;
     }
+    if (target === "profile") {
+      renderProfilePage();
+      return;
+    }
     if (target === "business") {
       renderBusinessPage();
       return;
@@ -637,6 +881,26 @@
     }
     if (target === "inventory") {
       renderInventoryPage();
+      return;
+    }
+    if (target === "inventory-import") {
+      renderInventoryImportPage();
+      return;
+    }
+    if (target === "inventory-capture") {
+      renderInventoryCapturePage();
+      return;
+    }
+    if (target === "inventory-capture-result") {
+      renderInventoryCaptureResultPage();
+      return;
+    }
+    if (target === "inventory-confirm") {
+      renderInventoryConfirmPage();
+      return;
+    }
+    if (target === "inventory-detail") {
+      renderInventoryDetailPage();
       return;
     }
     if (target === "buy") renderBuyPage();

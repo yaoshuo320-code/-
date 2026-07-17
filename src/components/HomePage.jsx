@@ -1,6 +1,6 @@
 /**
- * HomePage — Revo V1.1 AI店长 Dashboard
- * 智脑 Tab 唯一主入口：AI 二手3C经营伙伴
+ * HomePage — Revo V2.0 智脑首页（手机 MVP）
+ * 第一屏：问Revo → 首次体验 → 经营提醒 → 库存大脑 → 行业趋势
  */
 (function (global) {
   const GUIDE_KEY = "revo_brain_guide_seen_v1";
@@ -78,22 +78,8 @@
       </span>`).join("");
   }
 
-  function guideCard() {
-    if (hasSeenGuide()) return "";
-    return `
-      <section class="ai-section">
-        <div class="ai-guide-card">
-          <p class="ai-guide-kicker">第一次使用</p>
-          <h3 class="ai-guide-title">试试 Revo AI判断</h3>
-          <p class="ai-guide-desc">输入你今天收到的一台机器<br>AI帮你判断：值不值得收</p>
-          <button type="button" class="ai-guide-btn" id="aiGuideBtn">立即判断</button>
-        </div>
-      </section>`;
-  }
-
   global.HomePage = {
     GUIDE_KEY,
-
     markGuideSeen,
 
     render(containerId, {
@@ -104,7 +90,6 @@
       onIndustryClick,
       onMessage,
       onSettings,
-      onGuideStart,
     }) {
       const el = document.getElementById(containerId);
       if (!el || !data) return;
@@ -113,7 +98,7 @@
       const greet = greetingMeta();
 
       el.innerHTML = `
-        <div class="ai-dash">
+        <div class="ai-dash ai-dash--mvp">
           <header class="ai-dash-header">
             <button type="button" class="ai-brand" id="aiBrandBtn" aria-label="Revo">
               <span class="ai-brand-mark"></span>
@@ -125,21 +110,44 @@
             </div>
           </header>
 
-          <section class="ai-welcome">
-            <div class="ai-orb-wrap">
-              <div class="ai-orb" aria-hidden="true">
-                <span class="ai-orb-halo"></span>
-                <span class="ai-orb-halo ai-orb-halo-2"></span>
-                <span class="ai-orb-ring"></span>
-                <span class="ai-orb-ring-2"></span>
-                <span class="ai-orb-core"></span>
+          <section class="ai-section ai-section-top-entry">
+            <div class="ai-ask-card ai-ask-card--hero" id="aiAskMain">
+              <div class="ai-ask-glow"></div>
+              <div class="ai-ask-head">
+                <span class="ai-ask-kicker">✨ 问Revo</span>
+                <p class="ai-ask-hero-copy">拍一件货，<br>30秒知道值不值得收。</p>
+              </div>
+              <div class="ai-ask-modes ai-ask-modes--hero">
+                <button type="button" class="ai-ask-mode" data-mode="photo">📷 拍照分析</button>
+                <button type="button" class="ai-ask-mode" data-mode="type">⌨ 输入型号</button>
+                <button type="button" class="ai-ask-mode" data-mode="voice">🎤 语音描述</button>
               </div>
             </div>
+          </section>
+
+          <div id="firstExperienceMount"></div>
+          <div id="dailyInsightMount"></div>
+          <div id="inventoryBrainMount"></div>
+
+          <section class="ai-section">
+            <div class="ai-section-head">
+              <span class="ai-section-icon">🌎</span>
+              <span class="ai-section-title">今日行业趋势</span>
+            </div>
+            <div class="ai-trend-card">
+              <div class="ai-trend-chips">${trendChips(trends)}</div>
+              <button type="button" class="ai-trend-btn" id="aiIndustryBtn">查看行业雷达</button>
+            </div>
+          </section>
+
+          <section class="ai-welcome ai-welcome--shifted">
             <h1 class="ai-welcome-title">${greet.text}，老板 ${greet.emoji}</h1>
             <p class="ai-welcome-sub">Revo 已经分析今日市场：</p>
             <p class="ai-welcome-summary">${welcomeSummary || ""}</p>
             <p class="ai-brand-line">“${brandLine || "我帮你盯市场，你负责做决定。"}”</p>
           </section>
+
+          <div id="aiDailyReportMount"></div>
 
           ${notice ? `
           <section class="ai-section">
@@ -156,44 +164,13 @@
             <div class="ai-stat-grid">${summaryCards(summary)}</div>
           </section>
 
-          <section class="ai-section">
+          <section class="ai-section ai-section-last">
             <div class="ai-section-head">
               <span class="ai-section-icon">🔥</span>
               <span class="ai-section-title">今日赚钱机会</span>
               <span class="ai-section-count">TOP ${Math.min(3, (opportunities || []).length)}</span>
             </div>
             <div class="ai-opp-list">${oppCards((opportunities || []).slice(0, 3))}</div>
-          </section>
-
-          ${guideCard()}
-
-          <div id="inventoryBrainMount"></div>
-
-          <section class="ai-section">
-            <button type="button" class="ai-ask-card" id="aiAskMain">
-              <div class="ai-ask-glow"></div>
-              <div class="ai-ask-head">
-                <span class="ai-ask-kicker">✨ 问 Revo</span>
-                <span class="ai-ask-hint">30秒判断是否值得交易</span>
-              </div>
-              <p class="ai-ask-cta">输入型号 / 拍照 / 语音</p>
-              <div class="ai-ask-modes">
-                <span class="ai-ask-mode" data-mode="type">⌨️ 输入</span>
-                <span class="ai-ask-mode" data-mode="photo">📷 拍照</span>
-                <span class="ai-ask-mode" data-mode="voice">🎙 语音</span>
-              </div>
-            </button>
-          </section>
-
-          <section class="ai-section ai-section-last">
-            <div class="ai-section-head">
-              <span class="ai-section-icon">🌎</span>
-              <span class="ai-section-title">今日行业趋势</span>
-            </div>
-            <div class="ai-trend-card">
-              <div class="ai-trend-chips">${trendChips(trends)}</div>
-              <button type="button" class="ai-trend-btn" id="aiIndustryBtn">查看行业雷达</button>
-            </div>
           </section>
         </div>`;
 
@@ -204,27 +181,14 @@
         };
       });
 
-      const askMain = document.getElementById("aiAskMain");
-      if (askMain) {
-        askMain.onclick = (e) => {
-          const mode = e.target.closest("[data-mode]")?.dataset?.mode;
-          if (mode && onAskMode) {
-            e.stopPropagation();
-            onAskMode(mode);
-            return;
-          }
-          onAskRevo && onAskRevo();
-        };
-      }
-
-      const guideBtn = document.getElementById("aiGuideBtn");
-      if (guideBtn) {
-        guideBtn.onclick = () => {
-          markGuideSeen();
-          if (onGuideStart) onGuideStart();
+      el.querySelectorAll("#aiAskMain [data-mode]").forEach((btn) => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const mode = btn.dataset.mode;
+          if (onAskMode) onAskMode(mode);
           else if (onAskRevo) onAskRevo();
         };
-      }
+      });
 
       const industryBtn = document.getElementById("aiIndustryBtn");
       if (industryBtn) industryBtn.onclick = () => onIndustryClick && onIndustryClick();

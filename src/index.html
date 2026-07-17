@@ -2,7 +2,11 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
   <title>Revo — AI店长 · 二手3C经营助手</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -33,17 +37,59 @@
     </div>
   </div>
 
-  <!-- 市场 · 一级入口（行业趋势 / 热门品类 / 市场机会） -->
+  <!-- 市场 · 市场大脑 -->
   <div id="page-market" class="page theme-market">
     <div class="container home-container">
       <div id="marketPageMount"></div>
     </div>
   </div>
 
-  <!-- 库存 · 库存大脑 Dashboard -->
+  <!-- 我的 · AI经营档案 -->
+  <div id="page-profile" class="page theme-profile">
+    <div class="container home-container">
+      <div id="profilePageMount"></div>
+    </div>
+  </div>
+
+  <!-- 库存 · 库存大脑闭环 -->
   <div id="page-inventory" class="page theme-inventory">
     <div class="container home-container">
       <div id="inventoryPageMount"></div>
+    </div>
+  </div>
+
+  <!-- 库存导入 -->
+  <div id="page-inventory-import" class="page theme-inventory">
+    <div class="container home-container">
+      <div id="inventoryImportMount"></div>
+    </div>
+  </div>
+
+  <!-- AI 拍照入库 -->
+  <div id="page-inventory-capture" class="page theme-inventory">
+    <div class="container home-container">
+      <div id="inventoryCaptureMount"></div>
+    </div>
+  </div>
+
+  <!-- 拍照识别结果 -->
+  <div id="page-inventory-capture-result" class="page theme-inventory">
+    <div class="container home-container">
+      <div id="inventoryCaptureResultMount"></div>
+    </div>
+  </div>
+
+  <!-- 入库确认 -->
+  <div id="page-inventory-confirm" class="page theme-inventory">
+    <div class="container home-container">
+      <div id="inventoryConfirmMount"></div>
+    </div>
+  </div>
+
+  <!-- 库存商品详情 -->
+  <div id="page-inventory-detail" class="page theme-inventory">
+    <div class="container home-container">
+      <div id="inventoryDetailMount"></div>
     </div>
   </div>
 
@@ -164,22 +210,30 @@
     </div>
   </div>
 
-  <!-- 行业 -->
+  <!-- 行业：二手3C行业生命周期地图 -->
   <div id="page-industry" class="page theme-industry">
     <div class="container">
       <div class="industry-hero">
-        <div class="dash-kicker">INDUSTRY ANALYSIS</div>
-        <div class="dash-title">行业分析</div>
-        <div class="dash-subtitle">二手市场趋势地图 · 发现增长方向</div>
+        <div class="dash-kicker">LIFECYCLE MAP</div>
+        <div class="dash-title">行业生命周期地图</div>
+        <div class="dash-subtitle">二手3C · 提前判断淡旺季与备货节奏</div>
       </div>
       <div id="industrySectorFilter"></div>
-      <div class="analytics-card">
-        <div class="section-label">行业热度</div>
+      <div class="analytics-card glass-card">
+        <div class="section-label">市场热度</div>
         <div id="industryHeatChart"></div>
       </div>
-      <div class="analytics-card">
-        <div class="section-label">趋势地图</div>
-        <div id="industryTrendList"></div>
+      <div class="analytics-card glass-card">
+        <div class="section-label">三级品类</div>
+        <div id="industryProductTabs"></div>
+      </div>
+      <div class="analytics-card glass-card">
+        <div class="section-label">全年趋势曲线</div>
+        <div id="industrySeasonChart"></div>
+      </div>
+      <div class="analytics-card glass-card">
+        <div class="section-label">AI行业建议</div>
+        <div id="industryAiAdvice"></div>
       </div>
     </div>
   </div>
@@ -201,7 +255,18 @@
   <script src="data/industryData.js"></script>
   <script src="data/marketHeat.js"></script>
   <script src="data/homeData.js"></script>
+  <script src="data/dailyReportData.js"></script>
+  <script src="data/dailyInsightData.js"></script>
+  <script src="data/demoExperienceData.js"></script>
   <script src="data/inventoryData.js"></script>
+  <script src="data/inventoryBrainData.js"></script>
+  <script src="data/inventoryParser.js"></script>
+  <script src="data/visionInventoryData.js"></script>
+  <script src="data/tradeDecisionData.js"></script>
+  <script src="data/businessData.js"></script>
+  <script src="data/marketData.js"></script>
+  <script src="data/seasonTrendData.js"></script>
+  <script src="data/profileData.js"></script>
   <script src="price-brain-db.js"></script>
   <script src="trade-engine.js"></script>
   <script src="trade-records.js"></script>
@@ -212,11 +277,28 @@
   <script src="components/ProductCard.jsx"></script>
   <script src="components/CategoryFilter.jsx"></script>
   <script src="components/IndustryTrend.jsx"></script>
+  <script src="components/SeasonCurve.jsx"></script>
+  <script src="components/SeasonTrendChart.jsx"></script>
   <script src="components/BottomNav.jsx"></script>
   <script src="components/HubPage.jsx"></script>
+  <script src="components/MarketBrain.jsx"></script>
+  <script src="components/SeasonTrend.jsx"></script>
+  <script src="components/ProfileBrain.jsx"></script>
+  <script src="components/BusinessPage.jsx"></script>
+  <script src="components/ProfileBrain.jsx"></script>
   <script src="components/InventoryBrain.jsx"></script>
   <script src="components/InventoryPage.jsx"></script>
+  <script src="components/InventoryDashboard.jsx"></script>
+  <script src="components/InventoryDetail.jsx"></script>
+  <script src="components/InventoryCaptureResult.jsx"></script>
+  <script src="components/InventoryConfirm.jsx"></script>
+  <script src="components/InventoryImport.jsx"></script>
+  <script src="components/TradeDecisionCard.jsx"></script>
+  <script src="components/AIInventoryCapture.jsx"></script>
   <script src="components/HomePage.jsx"></script>
+  <script src="components/FirstExperience.jsx"></script>
+  <script src="components/AIDailyReport.jsx"></script>
+  <script src="components/DailyInsight.jsx"></script>
   <script src="components/SplashScreen.jsx"></script>
   <script src="app.js"></script>
 </body>

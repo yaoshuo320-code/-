@@ -155,6 +155,43 @@
     async importInventory(_rows) {
       return { ok: true, count: 0 };
     },
+
+    /**
+     * AI 拍照入库：写入库存大脑（items + 概览 + 诊断）
+     * 供 AIInventoryCapture → TradeDecisionCard 确认后调用
+     */
+    addFromCapture(item, decision) {
+      if (!item) return { ok: false };
+      INVENTORY_BRAIN.items = [item, ...(INVENTORY_BRAIN.items || [])];
+      const ov = INVENTORY_BRAIN.overview;
+      ov.total = (ov.total || 0) + (item.qty || 1);
+      ov.pending = (ov.pending || 0) + 1;
+      if (decision && decision.advice && decision.advice.verdict === "buy") {
+        ov.profitOpp = (ov.profitOpp || 0) + 1;
+      }
+      if (decision && decision.advice && decision.advice.verdict === "caution") {
+        ov.risk = (ov.risk || 0) + 1;
+      }
+
+      const diag = {
+        id: item.id,
+        type: decision && decision.advice && decision.advice.verdict === "caution" ? "risk" : "profit",
+        icon: (decision && decision.advice && decision.advice.icon) || "📦",
+        title: "新入库",
+        name: item.name,
+        meta: [
+          decision && decision.market && decision.market.buySuggest
+            ? `收货建议 ${decision.market.buySuggest}`
+            : "待定价",
+          decision && decision.market && decision.market.profitRange
+            ? `利润 ${decision.market.profitRange}`
+            : "",
+        ].filter(Boolean),
+        suggest: (decision && decision.advice && decision.advice.title) || "持续关注",
+      };
+      INVENTORY_BRAIN.diagnoses = [diag, ...(INVENTORY_BRAIN.diagnoses || [])].slice(0, 8);
+      return { ok: true, item, overview: ov };
+    },
   };
 
   global.inventoryData = INVENTORY_BRAIN;
